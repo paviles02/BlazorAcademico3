@@ -1,0 +1,53 @@
+﻿@page "/listaGrados"
+@using BlazorAcademico.Shared
+@inject HttpClient http
+
+
+@code{
+    string[] cabecerasTabla = { "Codigo", "Grado", "Seccion", "Opciones" };
+}
+<div class="@tipoMsg">
+    @msg
+</div>
+<Lista cabeceras=cabecerasTabla
+       lista=listaGrados
+       eventEliminar="EliminarDatos"
+       eventBusqueda="BusquedaGrado"
+       rtaAgregar="agregarGrado"
+       rtaEditar="editarGrado" />
+
+@code {
+    private string tipoMsg = "", msg = "";
+    private GradoCls[] listaGrados;
+
+    protected override async Task OnInitializedAsync()
+    {
+        listaGrados = await http.GetFromJsonAsync<GradoCls[]>("api/Grado/Get");
+    }
+
+    public async Task BusquedaGrado(string data)
+    {
+        tipoMsg = ""; msg = "";
+        listaGrados = await http.GetFromJsonAsync<GradoCls[]>("api/Grado/Filtrar/" + data);
+
+    }
+
+    public async Task EliminarDatos(string data)
+    {
+        int respuesta = await http.GetFromJsonAsync<int>("api/Grado/EliminarGrado/" + data);
+        if (respuesta == 1)
+        {
+            data = "";
+            listaGrados = await http.GetFromJsonAsync<GradoCls[]>("api/Grado/Filtrar/" + data);
+            tipoMsg = "alert alert-primary";
+            msg = "Grado eliminado con exito";
+        }
+        else
+        {
+            tipoMsg = "alert alert-danger";
+            msg = "Accion no pudo procesarse, es posible que el Grado ya cuente con registros";
+        }
+    }
+
+
+}
